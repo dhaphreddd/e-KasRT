@@ -262,7 +262,7 @@ subscribeToAuth((user, profile) => {
 // PWA: Register Service Worker
 if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('./service-worker.js')
       .then(reg => console.log('Service Worker registered successfully!', reg.scope))
       .catch(err => console.log('Service Worker registration failed:', err));
   });
