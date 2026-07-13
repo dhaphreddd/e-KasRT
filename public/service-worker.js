@@ -1,13 +1,10 @@
 const CACHE_NAME = 'e-kasrt-cache-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/src/main.js',
-  '/src/styles/variables.css',
-  '/src/styles/main.css',
-  '/manifest.json',
-  '/assets/icon-192.png',
-  '/assets/icon-512.png',
+  './',
+  './index.html',
+  './manifest.json',
+  './assets/icon-192.png',
+  './assets/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
   'https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css',
   'https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js',
@@ -67,7 +64,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         // Offline fallback for index.html
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match('./index.html');
         }
       });
     })
