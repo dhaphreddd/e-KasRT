@@ -1,0 +1,129 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getRole() {
+      return getUserData().role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (getRole() == 'admin');
+    }
+
+    function isBendahara() {
+      return isAuthenticated() && (getRole() == 'bendahara');
+    }
+
+    function isRT() {
+      return isAuthenticated() && (getRole() == 'rt');
+    }
+
+    function isWarga() {
+      return isAuthenticated() && (getRole() == 'warga');
+    }
+
+    // users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || (
+        request.auth.uid == userId && 
+        request.resource.data.role == 'warga' && 
+        request.resource.data.is_active == true
+      );
+      allow update: if isAdmin() || (
+        request.auth.uid == userId && 
+        request.resource.data.role == resource.data.role && 
+        request.resource.data.is_active == resource.data.is_active
+      );
+      allow delete: if isAdmin();
+    }
+
+    // warga collection
+    match /warga/{wargaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // kategori_transaksi collection
+    match /kategori_transaksi/{kategoriId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isBendahara();
+    }
+
+    // transaksi collection
+    match /transaksi/{transaksiId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAdmin() || isBendahara()) && request.resource.data.nominal >= 0;
+      allow delete: if isAdmin() || isBendahara();
+    }
+
+    // iuran collection
+    match /iuran/{iuranId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isBendahara();
+    }
+
+    // iuran_warga collection (custom rates)
+    match /iuran_warga/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAdmin() || isBendahara()) && request.resource.data.nominal >= 0;
+      allow delete: if isAdmin() || isBendahara();
+    }
+
+    // pembayaran_iuran collection
+    match /pembayaran_iuran/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAdmin() || isBendahara()) && request.resource.data.nominal >= 0;
+      allow delete: if isAdmin() || isBendahara();
+    }
+
+    // notifications collection
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (
+        resource.data.user_id_target == null || 
+        resource.data.user_id_target == request.auth.uid
+      );
+      allow write: if isAdmin() || isBendahara();
+    }
+
+    // settings collection
+    match /settings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // activity_logs collection
+    match /activity_logs/{logId} {
+      allow read: if isAdmin() || isRT();
+      allow write: if isAuthenticated();
+    }
+
+    // backup_history collection
+    match /backup_history/{backupId} {
+      allow read, write: if isAdmin();
+    }
+
+    // reset_password_requests collection
+    match /reset_password_requests/{id} {
+      allow create: if request.resource.data.status == 'pending';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // usernames collection mapping
+    match /usernames/{username} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if isAdmin();
+    }
+  }
+}
