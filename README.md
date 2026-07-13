@@ -1,4 +1,4 @@
-# e-kasRT - Sistem Kas Keuangan & Iuran Warga (Firebase + PWA)
+# e-kasRT - Sistem Kas Keuangan & Iuran Warga (Firebase + PWA).
 
 Aplikasi Web SPA (Single Page Application) modern untuk mengelola kas keuangan RT, monitoring iuran bulanan warga, dan pencatatan transaksi kas secara realtime. Dibangun menggunakan arsitektur serverless modern.
 
