@@ -17,12 +17,12 @@ import { logActivity } from "../firebase/db";
 
 // Recreate config for secondary app user creation client-side
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "dummy-key-for-now",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "ekasrt-local.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "ekasrt-local",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "ekasrt-local.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234:web:abcd"
+  apiKey: "AIzaSyD4t6NvncbMLfXI_i7J1DHL3ERb8DCHSqs",
+  authDomain: "e-kasrt.firebaseapp.com",
+  projectId: "e-kasrt",
+  storageBucket: "e-kasrt.firebasestorage.app",
+  messagingSenderId: "537379480507",
+  appId: "1:537379480507:web:fe3679f16d7e1a2c9a1a9e"
 };
 
 // Initialize secondary app
