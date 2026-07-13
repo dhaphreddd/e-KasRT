@@ -20,9 +20,6 @@ export function renderLaporanPage() {
         <h3 class="card-title" style="margin-bottom: 0;">Laporan Kas Keuangan</h3>
         
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button id="btn-export-laporan-excel" class="btn btn-secondary" style="padding: 8px 16px; border-radius: var(--radius-md); font-size: 0.85rem;">
-            <i class="ri-file-excel-2-line"></i> Unduh Excel
-          </button>
           <button id="btn-print-laporan" class="btn btn-secondary" style="padding: 8px 16px; border-radius: var(--radius-md); font-size: 0.85rem;">
             <i class="ri-printer-line"></i> Cetak PDF
           </button>
@@ -391,129 +388,7 @@ export async function initLaporanPage() {
     }
   });
 
-  // Client-side Excel Export using SheetJS (xlsx)
-  document.getElementById("btn-export-laporan-excel").addEventListener("click", () => {
-    const bVal = filterBulan.value !== "" ? Number(filterBulan.value) : null;
-    const tVal = filterTahun.value !== "" ? Number(filterTahun.value) : null;
-    const jVal = filterJenis.value;
-    const kVal = filterKategori.value;
 
-    const filtered = allTransactions.filter(tx => {
-      if (!tx.tanggal) return false;
-      const date = tx.tanggal.toDate ? tx.tanggal.toDate() : new Date(tx.tanggal);
-      const matchMonth = bVal === null || (date.getMonth() + 1) === bVal;
-      const matchYear = tVal === null || date.getFullYear() === tVal;
-      const matchJenis = jVal === "" || tx.jenis === jVal;
-      const matchKategori = kVal === "" || tx.kategori_id === kVal;
-      return matchMonth && matchYear && matchJenis && matchKategori;
-    });
-
-    if (filtered.length === 0) {
-      Swal.fire("Info", "Tidak ada data untuk diekspor.", "info");
-      return;
-    }
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-
-    // 1. Prepare detailed transaction sheet
-    const detailData = filtered.map(tx => {
-      const nom = Number(tx.nominal);
-      if (tx.jenis === "pemasukan") totalIncome += nom;
-      else totalExpense += nom;
-
-      return {
-        Tanggal: formatDate(tx.tanggal),
-        Kategori: tx.kategori_nama,
-        Keterangan: tx.keterangan || "",
-        "Warga Terkait": tx.warga_nama_terkait || "",
-        Jenis: tx.jenis.toUpperCase(),
-        "Nominal (Rp)": nom
-      };
-    });
-
-    // Append formatted totals to detailed list
-    detailData.push({}); // Empty spacing row
-    detailData.push({
-      Tanggal: "TOTAL PEMASUKAN",
-      "Nominal (Rp)": totalIncome
-    });
-    detailData.push({
-      Tanggal: "TOTAL PENGELUARAN",
-      "Nominal (Rp)": totalExpense
-    });
-    detailData.push({
-      Tanggal: "SALDO AKHIR PERIODE",
-      "Nominal (Rp)": totalIncome - totalExpense
-    });
-
-    // 2. Prepare summary monthly aggregates sheet
-    const summaryData = [];
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    const yearSelected = tVal || new Date().getFullYear();
-
-    let yearIncomeSum = 0;
-    let yearExpenseSum = 0;
-
-    for (let m = 0; m < 12; m++) {
-      let income = 0;
-      let expense = 0;
-      allTransactions.forEach(tx => {
-        if (!tx.tanggal) return;
-        const d = tx.tanggal.toDate ? tx.tanggal.toDate() : new Date(tx.tanggal);
-        if (d.getFullYear() === yearSelected && d.getMonth() === m) {
-          if (tx.jenis === "pemasukan") income += Number(tx.nominal);
-          else expense += Number(tx.nominal);
-        }
-      });
-
-      yearIncomeSum += income;
-      yearExpenseSum += expense;
-
-      summaryData.push({
-        Bulan: monthNames[m],
-        "Pemasukan (Rp)": income,
-        "Pengeluaran (Rp)": expense,
-        "Saldo (Rp)": income - expense
-      });
-    }
-
-    // Append total row to summary
-    summaryData.push({}); // spacing
-    summaryData.push({
-      Bulan: "TOTAL TAHUNAN",
-      "Pemasukan (Rp)": yearIncomeSum,
-      "Pengeluaran (Rp)": yearExpenseSum,
-      "Saldo (Rp)": yearIncomeSum - yearExpenseSum
-    });
-
-    // Build SheetJS Workbook
-    const workbook = XLSX.utils.book_new();
-
-    const sheetSummary = XLSX.utils.json_to_sheet(summaryData);
-    // Adjust Column Widths for Summary
-    sheetSummary['!cols'] = [
-      { wch: 18 }, // Bulan
-      { wch: 18 }, // Pemasukan
-      { wch: 18 }, // Pengeluaran
-      { wch: 18 }  // Saldo
-    ];
-    XLSX.utils.book_append_sheet(workbook, sheetSummary, "Ringkasan Bulanan");
-
-    const sheetDetail = XLSX.utils.json_to_sheet(detailData);
-    // Adjust Column Widths for Detail
-    sheetDetail['!cols'] = [
-      { wch: 15 }, // Tanggal
-      { wch: 20 }, // Kategori
-      { wch: 30 }, // Keterangan
-      { wch: 25 }, // Warga Terkait
-      { wch: 15 }, // Jenis
-      { wch: 20 }  // Nominal
-    ];
-    XLSX.utils.book_append_sheet(workbook, sheetDetail, "Detail Transaksi");
-
-    XLSX.writeFile(workbook, `Laporan_Kas_RT_${yearSelected}.xlsx`);
-  });
 
   let reportChartInstance = null;
 
